@@ -1,4 +1,1 @@
-tkinter
-numpy
-pandas
-pyinstaller
+pyinstaller==3.4
