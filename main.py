@@ -11,7 +11,7 @@ class GradeGui(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("教务处考勤统计汇总")
+        self.title("教务处考勤统计汇总平台")
         util.center_window(self, 800, 500)
         self.resizable(False, False)
 
