@@ -17,7 +17,8 @@ class AttdRecord(threading.Thread):
         self.time_am = pd.to_datetime(time_am)
         self.time_noon = pd.to_datetime('12:00')
         self.time_pm = pd.to_datetime(time_pm)
-        self.festival_ratio = 0.7
+
+        self.DAYOFF_threshold = 0.7
 
     def run(self):
         """
@@ -56,6 +57,7 @@ class AttdRecord(threading.Thread):
         user_ids = list()  # user id
         afls = list()  # ask for leave 请假
         evections = list()  # 出差
+        go_outs = list() # 外出
         absences = list()  # 旷工
         work_days = list()  # 出勤
         forget_counts = list()  # 缺卡（忘记打卡）次数
@@ -65,11 +67,10 @@ class AttdRecord(threading.Thread):
         total_latetimes = list()  # 迟到时长
 
         schedule_values = schedule_df.values
-        for summary_index, schedule_index, schedule_value in \
-                zip(summary_indexes, schedule_indexes, schedule_values):
-            print('summary_index: {}'.format(summary_index))
-            print('schedule_index: {}'.format(schedule_index))
+        summary_values = summary_df.values
+        for schedule_value, summary_value in zip(schedule_values, summary_values):
             print(schedule_value)
+            print(summary_value)
 
             name = schedule_value[0]
             if name.count('离职') > 0:
@@ -79,6 +80,7 @@ class AttdRecord(threading.Thread):
 
             afl = 0
             evection = 0
+            go_out = 0
             absence = 0
             work_day = 0
             forget_count = 0
@@ -88,51 +90,52 @@ class AttdRecord(threading.Thread):
             desc_count = 0
             total_latetime = 0
 
-            for schedule_column, item in zip(schedule_columns[5:], schedule_value[5:]):
-                print('schedule_column: {}'.format(schedule_column))
-                print('item: {}'.format(item))
+            day = 0 # 日期序号
+            for schedule_item, summary_item in zip(schedule_value[5:], summary_value[34:]):
+                day += 1
+                #  if schedule_column in ['六', '日']:
+                    #  if ((len(schedule_df) - schedule_df[schedule_column].count()) / len(schedule_df)) >= self.DAYOFF_threshold:
+                        #  continue
+                #  elif ((len(schedule_df) - schedule_df[schedule_column].count()) / len(schedule_df)) >= self.DAYOFF_threshold:
+                    #  print('%s day-off' % schedule_column)
+                    #  # 大概率是休息日
+                    #  continue
+                if pd.isna(summary_item) or pd.isnull(summary_item):
+                    summary_item = ''
 
-                if schedule_column in ['六', '日']:
+                if summary_item.count('休息') > 0:
                     continue
-                elif ((len(schedule_df) - schedule_df[schedule_column].count()) / len(schedule_df)) >= self.festival_ratio:
-                    # 是否是节假日
+                elif summary_item.count('正常') > 0:
+                    work_day +=1
                     continue
                 else:
-                    summary = summary_df.loc[summary_index, schedule_column]
-                    print('summary: {}'.format(summary))
-                    if pd.isna(summary) or pd.isnull(summary):
-                        summary = ''
-
-                    if pd.isna(item) or pd.isnull(item) or item.rstrip() == '':  # 没有出勤记录
+                    if pd.isna(schedule_item) or pd.isnull(schedule_item) or schedule_item.rstrip() == '':  # 没有出勤记录
                         # 判断是出勤，还是请假
-                        if schedule_column in summary_columns:
-                            if summary.count('旷工') > 0:
-                                absence += 1
-                            elif summary.count('出差') > 0:
-                                evection += 1
-                            elif summary.count('假') > 0:
-                                afl += 1
-                            elif summary.count('外') > 0:
-                                evection += 1
-                            else:
-                                continue
+                        if summary_item.count('旷工') > 0:
+                            absence += 1
+                        elif summary_item.count('出差') > 0:
+                            evection += 1
+                        elif summary_item.count('假') > 0:
+                            afl += 1
+                        elif summary_item.count('外') > 0:
+                            go_out += 1
                         else:
                             continue
 
                     else:  # 有出勤记录，注意只有一次打卡和多次打卡情况
                         work_day += 1
 
-                        times = item.split()
+                        times = schedule_item.split()
                         day_desc = '%s号（%s%s%s）'
                         am_desc = ''
                         pm_desc = ''
 
                         is_late_am = False
                         is_late_pm = False
-                        if summary.count('上班1迟到') > 0:
+                        if summary_item.count('上班1迟到') > 0:
                             is_late_am = True
 
-                        if summary.count('上班2迟到') > 0:
+                        if summary_item.count('上班2迟到') > 0:
                             is_late_pm = True
 
                         # 上午打卡
@@ -147,14 +150,14 @@ class AttdRecord(threading.Thread):
                         if time_am is None:
                             # 检查是否外出等，出差，请假等
                             is_special = False  # 是否为特殊情况
-                            if summary.count('出差') > 0:
+                            if summary_item.count('出差') > 0:
                                 evection += 1
                                 is_special = True
-                            elif summary.count('假') > 0:
+                            elif summary_item.count('假') > 0:
                                 afl += 1
                                 is_special = True
-                            elif summary.count('外') > 0:
-                                evection += 1
+                            elif summary_item.count('外') > 0:
+                                go_out += 1
                                 is_special = True
 
                             if not is_special:
@@ -181,14 +184,14 @@ class AttdRecord(threading.Thread):
                         if time_pm is None:
                             # 检查是否外出等，出差，请假等
                             is_special = False  # 是否为特殊情况
-                            if summary.count('出差') > 0:
+                            if summary_item.count('出差') > 0:
                                 evection += 1
                                 is_special = True
-                            elif summary.count('假') > 0:
+                            elif summary_item.count('假') > 0:
                                 afl += 1
                                 is_special = True
-                            elif summary.count('外') > 0:
-                                evection += 1
+                            elif summary_item.count('外') > 0:
+                                go_out += 1
                                 is_special = True
 
                             if not is_special:
@@ -205,11 +208,11 @@ class AttdRecord(threading.Thread):
 
                         if am_desc != '' and pm_desc != '':
                             desc_count += 1
-                            desc += day_desc % (schedule_column,
+                            desc += day_desc % (str(day),
                                                 am_desc, '、', pm_desc) + ' '
                         elif am_desc != '' or pm_desc != '':
                             desc_count += 1
-                            desc += day_desc % (schedule_column,
+                            desc += day_desc % (str(day),
                                                 am_desc, '', pm_desc) + ' '
                         #  if desc_count % 3 == 0:
                             #  desc += '\n'
@@ -224,6 +227,7 @@ class AttdRecord(threading.Thread):
             user_ids.append(user_id)
             afls.append(afl)
             evections.append(evection)
+            go_outs.append(go_out)
             absences.append(absence)
             forget_counts.append(forget_count)
             work_days.append(work_day)
@@ -234,16 +238,17 @@ class AttdRecord(threading.Thread):
 
         stats_df = pd.DataFrame({
             '姓名': names,
-            'UserId': user_ids,
+            #  'UserId': user_ids,
             '请假次数（次）': afls,
             '出差次数（次）': evections,
+            '外出次数（次）': go_outs,
             '旷工次数（次）': absences,
             '缺卡次数（次）': forget_counts,
             '出勤次数（次）': work_days,
             '迟到次数（次）': late_counts,
             '迟到时长（分钟)': total_latetimes,
             '迟到率': late_ratios,
-            '每一次迟到描述': descs
+            '描述': descs
         })
 
         # 不需要保存索引
