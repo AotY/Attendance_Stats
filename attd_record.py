@@ -103,12 +103,11 @@ class AttdRecord(threading.Thread):
                 if pd.isna(summary_item) or pd.isnull(summary_item) or summary_item == '':
                     summary_item = ''
 
-                if summary_item == '':
-                    continue
-
                 # in case error
                 summary_item = str(summary_item)
 
+                if summary_item == '':
+                    continue
                 elif summary_item.count('休息') > 0:
                     continue
                 elif summary_item.count('正常') > 0:
