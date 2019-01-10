@@ -72,7 +72,7 @@ class AttdRecord(threading.Thread):
             print(schedule_value)
             print(summary_value)
 
-            name = schedule_value[0]
+            name = str(schedule_value[0])
             if name.count('离职') > 0:
                 continue
 
@@ -105,6 +105,10 @@ class AttdRecord(threading.Thread):
 
                 if summary_item == '':
                     continue
+
+                # in case error
+                summary_item = str(summary_item)
+
                 elif summary_item.count('休息') > 0:
                     continue
                 elif summary_item.count('正常') > 0:
