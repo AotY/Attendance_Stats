@@ -100,10 +100,12 @@ class AttdRecord(threading.Thread):
                     #  print('%s day-off' % schedule_column)
                     #  # 大概率是休息日
                     #  continue
-                if pd.isna(summary_item) or pd.isnull(summary_item):
+                if pd.isna(summary_item) or pd.isnull(summary_item) or summary_item == '':
                     summary_item = ''
 
-                if summary_item.count('休息') > 0:
+                if summary_item == '':
+                    continue
+                elif summary_item.count('休息') > 0:
                     continue
                 elif summary_item.count('正常') > 0:
                     work_day +=1
