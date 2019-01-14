@@ -5,6 +5,7 @@ from tkinter import filedialog
 from attd_record import AttdRecord
 import util
 import os
+import pandas as pd
 
 
 class GradeGui(tk.Tk):
@@ -149,11 +150,21 @@ class GradeGui(tk.Tk):
         time_am = self.am_var.get()
         if time_am == '' or time_am == self.am_default_v:
             time_am = '08:00'
+        try:
+            pd.to_datetime(time_am)
+        except ValueError as e:
+            self.output_text.insert(tk.INSERT, "上午打卡时间格式错误：%s\n")
+            return
         self.output_text.insert(tk.INSERT, "上午打卡时间：%s\n"  % time_am)
 
         time_pm = self.pm_var.get()
         if time_pm == '' or time_pm == self.pm_default_v:
             time_pm = '14:00'
+        try:
+            pd.to_datetime(time_pm)
+        except ValueError as e:
+            self.output_text.insert(tk.INSERT, "下午打卡时间格式错误：%s\n")
+            return
         self.output_text.insert(tk.INSERT, "下午打卡时间：%s\n"  % time_pm)
 
         schedule_path = ''

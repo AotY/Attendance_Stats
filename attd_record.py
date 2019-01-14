@@ -146,10 +146,13 @@ class AttdRecord(threading.Thread):
                         # 上午打卡
                         time_am = None
                         for time in times:
-                            time = time[:5]
-                            if pd.to_datetime(time) < self.time_noon:
-                                time_am = pd.to_datetime(time)  # 上午打卡时间
-                                break
+                            try:
+                                time = time[:5]
+                                if pd.to_datetime(time) < self.time_noon:
+                                    time_am = pd.to_datetime(time)  # 上午打卡时间
+                                    break
+                            except ValueError as e:
+                                continue
                         print('time_am: {}'.format(time_am))
 
                         if time_am is None:
@@ -180,10 +183,13 @@ class AttdRecord(threading.Thread):
                         # 下午打卡
                         time_pm = None
                         for time in times:
-                            time = time[:5]
-                            if pd.to_datetime(time) > self.time_noon:
-                                time_pm = pd.to_datetime(time)
-                                break
+                            try:
+                                time = time[:5]
+                                if pd.to_datetime(time) > self.time_noon:
+                                    time_pm = pd.to_datetime(time)
+                                    break
+                            except ValueError as e:
+                                continue
                         print('time_pm: {}'.format(time_pm))
 
                         if time_pm is None:
