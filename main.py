@@ -39,7 +39,7 @@ class GradeGui(tk.Tk):
         self.am_var = tk.StringVar()
         self.am_entry = tk.Entry(am_frame, textvariable=self.am_var, font=standard_font)
         self.am_entry.pack(side=tk.RIGHT, padx=2)
-        self.am_default_v = '默认：08:00'
+        self.am_default_v = '08:00'
         self.am_var.set(self.am_default_v)
         am_frame.pack(side=tk.TOP, pady=5)
 
@@ -51,7 +51,7 @@ class GradeGui(tk.Tk):
         self.pm_var = tk.StringVar()
         self.pm_entry = tk.Entry(pm_frame, textvariable=self.pm_var, font=standard_font)
         self.pm_entry.pack(side=tk.RIGHT, padx=2)
-        self.pm_default_v = '默认：14:00'
+        self.pm_default_v = '14:00'
         self.pm_var.set(self.pm_default_v)
         pm_frame.pack(side=tk.TOP, pady=5)
 
@@ -153,7 +153,7 @@ class GradeGui(tk.Tk):
         try:
             pd.to_datetime(time_am)
         except ValueError as e:
-            self.output_text.insert(tk.INSERT, "上午打卡时间格式错误：%s\n")
+            self.output_text.insert(tk.INSERT, "上午打卡时间格式错误：%s\n" % time_am)
             return
         self.output_text.insert(tk.INSERT, "上午打卡时间：%s\n"  % time_am)
 
@@ -163,7 +163,7 @@ class GradeGui(tk.Tk):
         try:
             pd.to_datetime(time_pm)
         except ValueError as e:
-            self.output_text.insert(tk.INSERT, "下午打卡时间格式错误：%s\n")
+            self.output_text.insert(tk.INSERT, "下午打卡时间格式错误：%s\n" % time_pm)
             return
         self.output_text.insert(tk.INSERT, "下午打卡时间：%s\n"  % time_pm)
 
